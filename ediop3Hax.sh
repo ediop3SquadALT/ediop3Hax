@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 # Global Variables
 TOOLS_DIR="$HOME/ediop3Hax"
-WEBSHELL_DIR="$TOOLS_DIR/php_backdoors"
+WEBSHELL_DIR="/webshells/php"
 SQLMAP_DIR="$TOOLS_DIR/sqlmap"
 SOCIALFISH_DIR="$TOOLS_DIR/SocialFish"
 OSINTGRAM_DIR="$TOOLS_DIR/Osintgram"
